@@ -4,8 +4,9 @@ self.__SERVER_FILES_MANIFEST={
     "distDir": ".next",
     "cacheComponents": false,
     "htmlLimitedBots": "[\\w-]+-Google|Google-[\\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight",
-    "assetPrefix": "",
-    "trailingSlash": false,
+    "assetPrefix": "/hub/memory-games/",
+    "output": "export",
+    "trailingSlash": true,
     "images": {
       "deviceSizes": [
         640,
@@ -26,7 +27,7 @@ self.__SERVER_FILES_MANIFEST={
         256,
         384
       ],
-      "path": "/_next/image",
+      "path": "/hub/memory-games/_next/image/",
       "loader": "default",
       "loaderFile": "",
       "domains": [],
@@ -50,7 +51,7 @@ self.__SERVER_FILES_MANIFEST={
       "qualities": [
         75
       ],
-      "unoptimized": false
+      "unoptimized": true
     },
     "reactMaxHeadersLength": 6000,
     "cacheLife": {
@@ -90,7 +91,7 @@ self.__SERVER_FILES_MANIFEST={
         "expire": 31536000
       }
     },
-    "basePath": "",
+    "basePath": "/hub/memory-games",
     "expireTime": 31536000,
     "generateEtags": true,
     "poweredByHeader": true,

@@ -1,7 +1,12 @@
 self.__BUILD_MANIFEST = {
   "__rewrites": {
     "afterFiles": [],
-    "beforeFiles": [],
+    "beforeFiles": [
+      {
+        "source": "/hub/memory-games//_next/:path+",
+        "destination": "/hub/memory-games/_next/:path+"
+      }
+    ],
     "fallback": []
   },
   "sortedPages": [
