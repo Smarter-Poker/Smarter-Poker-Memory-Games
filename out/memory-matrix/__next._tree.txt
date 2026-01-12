@@ -1,2 +1,0 @@
-:HL["/hub/memory-games/_next/static/chunks/764cfc172f4968af.css","style"]
-0:{"buildId":"vivFbni32-MldhcZlZsx5","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"memory-matrix","paramType":null,"paramKey":"memory-matrix","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}

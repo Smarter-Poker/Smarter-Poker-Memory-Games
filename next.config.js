@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'export',
-    basePath: '/hub/memory-games',
-    assetPrefix: '/hub/memory-games/',
-    trailingSlash: true,
+    // Standard Vercel deployment - no static export needed
     images: {
         unoptimized: true,
     },
