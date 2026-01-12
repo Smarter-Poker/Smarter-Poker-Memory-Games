@@ -11,5 +11,6 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  return NextResponse.redirect(requestUrl.origin)
+  // Redirecting specifically to the World Hub primary domain
+  return NextResponse.redirect('https://smarter.poker')
 }

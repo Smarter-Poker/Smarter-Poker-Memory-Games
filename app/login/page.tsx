@@ -32,7 +32,7 @@ export default function LoginPage() {
           }}
           theme="dark"
           providers={['google', 'facebook']}
-          redirectTo={`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`}
+          redirectTo='https://smarter.poker'
         />
       </div>
     </div>
