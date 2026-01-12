@@ -12,7 +12,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 rounded-xl border border-zinc-800 bg-zinc-900 p-10 shadow-2xl">
         <div className="text-center">
           <h2 className="text-4xl font-extrabold tracking-tight text-white">SMARTER.POKER</h2>
-          <p className="mt-2 text-sm text-zinc-400">Secure Access Node</p>
+          <p className="mt-2 text-sm text-zinc-400">Empire Access Node</p>
         </div>
         
         <Auth
@@ -32,7 +32,7 @@ export default function LoginPage() {
           }}
           theme="dark"
           providers={['google', 'facebook']}
-          redirectTo='https://smarter.poker'
+          redirectTo="https://smarter.poker/auth/callback"
         />
       </div>
     </div>
