@@ -1,23 +1,43 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import RangeGrid from '../../components/memory-matrix/RangeGrid'
 import { SCENARIOS } from '../../lib/gto-solutions'
 import { gradeUserGrid, GradeResult } from '../../lib/grading-engine'
 import { GridState, ActionType } from '../../lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { clsx } from 'clsx'
+import {
+    gameEngine,
+    XPEventBus,
+    DiamondRewardEngine,
+    TRAINING_CONFIG
+} from '../../lib/engines'
 
 export default function MemoryMatrixPage() {
     // --- Game State ---
     const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0)
     const [userGrid, setUserGrid] = useState<GridState>({})
     const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
+    const [rewardPreview, setRewardPreview] = useState<ReturnType<typeof DiamondRewardEngine.previewReward> | null>(null)
+    const [sessionStarted, setSessionStarted] = useState(false)
 
     const scenario = SCENARIOS[currentScenarioIndex]
 
+    // Start session on mount
+    useEffect(() => {
+        gameEngine.startSession()
+        setSessionStarted(true)
+
+        // Subscribe to XP events for logging
+        const unsubscribe = XPEventBus.subscribe('*', (event) => {
+            console.log('🎮 Event received:', event.type, event.payload)
+        })
+
+        return () => unsubscribe()
+    }, [])
+
     const handleCellClick = (hand: string, action: ActionType) => {
-        // If graded, reset to paint mode if they click (optional UX choice)
         if (gradeResult) setGradeResult(null)
 
         setUserGrid(prev => ({
@@ -26,9 +46,16 @@ export default function MemoryMatrixPage() {
         }))
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const result = gradeUserGrid(userGrid, scenario.solution)
         setGradeResult(result)
+
+        // Calculate reward preview
+        const preview = DiamondRewardEngine.previewReward(result.score / 100, 0)
+        setRewardPreview(preview)
+
+        // Submit to game engine
+        await gameEngine.submitSession(scenario.id, result.score)
     }
 
     const handleNextLevel = () => {
@@ -36,12 +63,14 @@ export default function MemoryMatrixPage() {
         setCurrentScenarioIndex(nextIndex)
         setUserGrid({})
         setGradeResult(null)
+        setRewardPreview(null)
+        gameEngine.startSession()
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-8 font-sans selection:bg-orange-500/30">
+        <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans selection:bg-orange-500/30">
             <header className="mb-8 text-center">
-                <h1 className="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 animate-pulse">
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">
                     MEMORY MATRIX
                 </h1>
                 <p className="text-zinc-500 mt-2 font-mono uppercase tracking-[0.2em] text-xs">
@@ -52,18 +81,18 @@ export default function MemoryMatrixPage() {
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
 
                 {/* LEFT COLUMN: THE GRID */}
-                <section className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 shadow-2xl backdrop-blur-sm">
+                <section className="bg-zinc-900/50 p-4 md:p-6 rounded-3xl border border-zinc-800 shadow-2xl backdrop-blur-sm">
                     {/* Header Bar */}
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
                         <div>
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                            <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
                                 {scenario.title}
                                 {gradeResult && (
                                     <span className={clsx(
                                         "text-xs px-2 py-1 rounded font-black uppercase tracking-wider",
-                                        gradeResult.score >= 90 ? "bg-green-500 text-black" : "bg-red-500 text-black"
+                                        gradeResult.score >= 85 ? "bg-green-500 text-black" : "bg-red-500 text-black"
                                     )}>
-                                        {gradeResult.score >= 90 ? 'PASSED' : 'FAILED'}
+                                        {gradeResult.score >= 85 ? 'PASSED' : 'FAILED'}
                                     </span>
                                 )}
                             </h2>
@@ -80,9 +109,9 @@ export default function MemoryMatrixPage() {
                                 >
                                     <span className="text-sm text-zinc-500 uppercase tracking-widest font-mono">Accuracy</span>
                                     <span className={clsx(
-                                        "text-5xl font-black tracking-tighter",
+                                        "text-4xl md:text-5xl font-black tracking-tighter",
                                         gradeResult.score === 100 ? "text-purple-400" :
-                                            gradeResult.score > 80 ? "text-green-400" : "text-red-500"
+                                            gradeResult.score >= 85 ? "text-green-400" : "text-red-500"
                                     )}>
                                         {gradeResult.score}%
                                     </span>
@@ -108,21 +137,21 @@ export default function MemoryMatrixPage() {
                         {!gradeResult ? (
                             <button
                                 onClick={handleSubmit}
-                                className="px-12 py-4 bg-white text-black font-black text-xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                                className="px-8 md:px-12 py-4 bg-white text-black font-black text-lg md:text-xl rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                             >
                                 SUBMIT RANGE
                             </button>
                         ) : (
                             <div className="flex gap-4">
                                 <button
-                                    onClick={() => setGradeResult(null)} // Retry
-                                    className="px-8 py-3 bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700 transition-colors"
+                                    onClick={() => { setGradeResult(null); setRewardPreview(null) }}
+                                    className="px-6 md:px-8 py-3 bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700 transition-colors"
                                 >
                                     RETRY
                                 </button>
                                 <button
                                     onClick={handleNextLevel}
-                                    className="px-8 py-3 bg-orange-500 text-black font-bold rounded-lg hover:bg-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.5)]"
+                                    className="px-6 md:px-8 py-3 bg-orange-500 text-black font-bold rounded-lg hover:bg-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.5)]"
                                 >
                                     NEXT LEVEL &rarr;
                                 </button>
@@ -133,6 +162,64 @@ export default function MemoryMatrixPage() {
 
                 {/* RIGHT COLUMN: STATS & INFO */}
                 <aside className="space-y-6">
+                    {/* Diamond Reward Preview */}
+                    <AnimatePresence>
+                        {rewardPreview && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className={clsx(
+                                    "border rounded-2xl p-6",
+                                    rewardPreview.eligible
+                                        ? "bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border-yellow-600/50"
+                                        : "bg-zinc-900 border-zinc-800"
+                                )}
+                            >
+                                <h3 className="text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    💎 Diamond Reward
+                                    {rewardPreview.eligible && <span className="text-yellow-400">{rewardPreview.tierIcon}</span>}
+                                </h3>
+
+                                {rewardPreview.eligible ? (
+                                    <div className="space-y-3">
+                                        <div className="text-4xl font-black text-yellow-400 flex items-center gap-2">
+                                            +{rewardPreview.totalReward} 💎
+                                        </div>
+                                        <div className="text-xs text-zinc-400 space-y-1">
+                                            <div className="flex justify-between">
+                                                <span>Base Reward</span>
+                                                <span className="text-zinc-300">{rewardPreview.baseReward}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>Accuracy Bonus</span>
+                                                <span className="text-green-400">+{rewardPreview.accuracyBonus}</span>
+                                            </div>
+                                            {rewardPreview.streakBonus > 0 && (
+                                                <div className="flex justify-between">
+                                                    <span>Streak Bonus ({rewardPreview.multiplier}x)</span>
+                                                    <span className="text-orange-400">+{rewardPreview.streakBonus}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="text-xs text-zinc-500 pt-2 border-t border-zinc-800">
+                                            {rewardPreview.tier}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <div className="text-2xl text-zinc-500 mb-2">0 💎</div>
+                                        <p className="text-xs text-zinc-500">{rewardPreview.message}</p>
+                                        <p className="text-xs text-orange-400 mt-2">
+                                            Need {TRAINING_CONFIG.MIN_ACCURACY * 100}% to earn diamonds
+                                        </p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Feedback Protocol */}
                     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                         <h3 className="text-zinc-400 text-xs font-mono uppercase tracking-widest mb-4">Feedback Protocol</h3>
 
@@ -158,6 +245,7 @@ export default function MemoryMatrixPage() {
                         )}
                     </div>
 
+                    {/* Drill Sequence */}
                     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                         <h3 className="text-zinc-400 text-xs font-mono uppercase tracking-widest mb-4">Drill Sequence</h3>
                         <ul className="space-y-2">
@@ -172,6 +260,8 @@ export default function MemoryMatrixPage() {
                                         setCurrentScenarioIndex(idx)
                                         setUserGrid({})
                                         setGradeResult(null)
+                                        setRewardPreview(null)
+                                        gameEngine.startSession()
                                     }}
                                 >
                                     <span className={clsx(
@@ -184,6 +274,16 @@ export default function MemoryMatrixPage() {
                                 </li>
                             ))}
                         </ul>
+                    </div>
+
+                    {/* 85% Mastery Gate Info */}
+                    <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/10 border border-green-800/30 rounded-2xl p-6">
+                        <h3 className="text-green-400 text-xs font-mono uppercase tracking-widest mb-2 flex items-center gap-2">
+                            🔐 85% Mastery Gate
+                        </h3>
+                        <p className="text-xs text-zinc-400">
+                            Score 85% or higher to earn 💎 Diamonds and unlock the next level.
+                        </p>
                     </div>
                 </aside>
 

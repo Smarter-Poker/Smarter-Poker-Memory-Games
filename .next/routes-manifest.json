@@ -3,49 +3,20 @@
   "pages404": true,
   "appType": "app",
   "caseSensitive": false,
-  "basePath": "/hub/memory-games",
+  "basePath": "",
   "redirects": [
     {
-      "source": "/hub/memory-games",
-      "destination": "/hub/memory-games/",
-      "basePath": false,
+      "source": "/:path+/",
+      "destination": "/:path+",
       "internal": true,
       "priority": true,
       "statusCode": 308,
-      "regex": "^/hub/memory-games$"
-    },
-    {
-      "source": "/:file((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+)/",
-      "destination": "/:file",
-      "internal": true,
-      "priority": true,
-      "missing": [
-        {
-          "type": "header",
-          "key": "x-nextjs-data"
-        }
-      ],
-      "statusCode": 308,
-      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+))/$"
-    },
-    {
-      "source": "/:notfile((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+)",
-      "destination": "/:notfile/",
-      "internal": true,
-      "priority": true,
-      "statusCode": 308,
-      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+))$"
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
     }
   ],
   "headers": [],
   "rewrites": {
-    "beforeFiles": [
-      {
-        "source": "/hub/memory-games//_next/:path+",
-        "destination": "/hub/memory-games/_next/:path+",
-        "regex": "^/hub/memory-games//_next(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))(?:/)?$"
-      }
-    ],
+    "beforeFiles": [],
     "afterFiles": [],
     "fallback": []
   },
