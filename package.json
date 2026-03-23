@@ -3,7 +3,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.15.0",
@@ -26,5 +27,8 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "zustand": "^5.0.10"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }
